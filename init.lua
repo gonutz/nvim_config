@@ -281,6 +281,8 @@ function run(cmd)
 			print("error: no " .. cmd .. ".bat and no idea how to " .. cmd .. " file type " .. ft)
 		end
 	end
+
+	vim.cmd("e")
 end
 
 function open_recent_file()

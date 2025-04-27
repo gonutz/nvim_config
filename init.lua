@@ -5,6 +5,7 @@ _G.open_explorer = nil
 _G.open_console = nil
 _G.run = nil
 _G.open_recent_file = nil
+_G.get_tabline = nil
 
 vim.opt.number = true
 vim.opt.relativenumber = true
@@ -19,6 +20,7 @@ vim.opt.termguicolors = true
 vim.opt.fileformat = "unix"
 vim.opt.encoding = "utf-8"
 vim.opt.fileencoding = "utf-8"
+vim.opt.tabline = "%!v:lua.get_tabline()"
 vim.api.nvim_set_option("clipboard", "unnamedplus")
 
 vim.g.neovide_cursor_animation_length = 0
@@ -58,6 +60,24 @@ vim.keymap.set('i', '<s-tab>', '<c-p>')
 vim.keymap.set('n', '<a-v>', '<c-v>')
 vim.keymap.set({'c', 'i'}, '<C-v>', '<C-r>+', { noremap = true, silent = true })
 vim.keymap.set('n', '<leader>o', ':lua open_recent_file()<cr>')
+
+function get_tabline()
+	local s = ''
+	local active_tab = vim.fn.tabpagenr()
+	for i = 1, vim.fn.tabpagenr('$') do
+		local winnr = vim.fn.tabpagewinnr(i)
+		local bufnr = vim.fn.tabpagebuflist(i)[winnr]
+		local name = vim.fn.fnamemodify(vim.fn.bufname(bufnr), ':t')
+
+		-- Put the active tab in brackets.
+		if i == active_tab then
+			s = s .. '%#TabLineSel#' .. '%' .. i .. 'T' .. '[' .. name .. ']'
+		else
+			s = s .. '%#TabLine#' .. '%' .. i .. 'T' .. ' ' .. name .. ' '
+		end
+	end
+	return s
+end
 
 local function is_space(c)
 	return c == " " or c == "\t"

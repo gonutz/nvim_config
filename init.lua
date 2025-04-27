@@ -5,6 +5,7 @@ _G.open_explorer = nil
 _G.open_console = nil
 _G.run = nil
 _G.open_recent_file = nil
+_G.open_recent_file_list = nil
 _G.get_tabline = nil
 
 vim.opt.number = true
@@ -21,6 +22,7 @@ vim.opt.fileformat = "unix"
 vim.opt.encoding = "utf-8"
 vim.opt.fileencoding = "utf-8"
 vim.opt.tabline = "%!v:lua.get_tabline()"
+vim.opt.signcolumn = "yes"
 vim.api.nvim_set_option("clipboard", "unnamedplus")
 
 vim.g.neovide_cursor_animation_length = 0
@@ -45,8 +47,11 @@ vim.keymap.set('n', '<c-l>', '<c-w>l')
 vim.keymap.set('n', '<c-h>', '<c-w>h')
 vim.keymap.set('n', 'Ö', 'gt')
 vim.keymap.set('n', 'Ä', 'gT')
+vim.keymap.set('n', '<leader>v', ':vsp<cr>')
 vim.keymap.set('n', '<leader>a', vim.lsp.buf.code_action)
 vim.keymap.set('n', '<leader>R', vim.lsp.buf.rename)
+vim.keymap.set('i', '<f1>', vim.lsp.buf.signature_help)
+vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float)
 vim.keymap.set('n', '<leader>y', ':%y<cr>')
 vim.keymap.set({'n', 'i'}, '<c-j>', '<c-e>')
 vim.keymap.set({'n', 'i'}, '<c-k>', '<c-y>')
@@ -61,9 +66,14 @@ vim.keymap.set('n', '<leader>f', ':lua run("format")<cr>', { silent = true })
 vim.keymap.set('i', '<tab>', [[pumvisible() ? "\<c-n>" : "\<c-x>\<c-o>"]], { expr = true, noremap = true })
 vim.keymap.set('n', '<a-v>', '<c-v>')
 vim.keymap.set({'c', 'i'}, '<C-v>', '<C-r>+', { noremap = true, silent = true })
-vim.keymap.set('n', '<leader>o', ':lua open_recent_file()<cr>')
-vim.keymap.set('n', '-', '$')
+vim.keymap.set('n', '<leader>o', ':lua open_recent_file_list()<cr>')
+vim.keymap.set('n', '<leader>O', ':lua open_recent_file()<cr>')
+vim.keymap.set({'n', 'x'}, '-', '$')
 vim.keymap.set('n', '<c-p>', 'viwp:let @+=@0<cr>', { noremap = true, silent = true })
+vim.keymap.set('i', '<c-h>', '<left>')
+vim.keymap.set('i', '<c-j>', '<down>')
+vim.keymap.set('i', '<c-k>', '<up>')
+vim.keymap.set('i', '<c-l>', '<right>')
 
 function get_tabline()
 	local s = ''
@@ -304,6 +314,21 @@ function open_recent_file()
 	end
 end
 
+function open_recent_file_list()
+	local recents = vim.v.oldfiles
+	local list = ""
+	for i, file in ipairs(recents) do
+		list = list .. file .. "\n"
+	end
+
+	vim.cmd("tabnew")
+	local buffer = vim.api.nvim_get_current_buf()
+	vim.bo[buffer].buftype = "nofile"
+	vim.bo[buffer].swapfile = false
+	vim.bo[buffer].bufhidden = "wipe"
+	vim.api.nvim_buf_set_lines(buffer, 0, -1, false, vim.split(list, "\n"))
+end
+
 local function set_comment_prefix(slashes)
 	vim.keymap.set('n', '<leader>c', function()
 		toggle_comment(slashes)
@@ -449,9 +474,3 @@ vim.lsp.config['gopls'] = {
 	root_markers = { "go.mod" },
 }
 vim.lsp.enable("gopls")
-
-vim.lsp.config['mylsp'] = {
-	cmd = { "lsp" },
-	filetypes = { "test" },
-}
-vim.lsp.enable("mylsp")

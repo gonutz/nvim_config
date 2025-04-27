@@ -322,15 +322,87 @@ local function set_filetype_settings(ft)
 		set_comment_prefix("--")
 		vim.keymap.set('i', 'q<tab>', '<esc>oend<esc>O')
 		set_indent("\t")
+
+		vim.api.nvim_create_user_command("F", function(opts)
+			local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+
+			if #opts.args == 0 then
+				local text = "\nlocal function ()\nend\n"
+				local lines = vim.split(text, "\n")
+				vim.api.nvim_buf_set_text(0, row - 1, col, row - 1, col, lines)
+				vim.api.nvim_win_set_cursor(0, { row + 1, 15 })
+				vim.api.nvim_feedkeys("i", "n", true)
+			else
+				local text = "\nlocal function " .. opts.args .. "()\n\nend\n"
+				local lines = vim.split(text, "\n")
+				vim.api.nvim_buf_set_text(0, row - 1, col, row - 1, col, lines)
+				vim.api.nvim_win_set_cursor(0, { row + 2, 0 })
+				vim.api.nvim_feedkeys("S", "n", true)
+			end
+		end, { nargs = "?" })
 	elseif ft == "pascal" then
 		set_comment_prefix("//")
 		vim.keymap.set('i', 'q<tab>', 'begin<esc>oend;<esc>O')
 		set_indent("  ")
+
+		vim.api.nvim_create_user_command("En", function(opts)
+			local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+			local text = "\ntype\n  " .. opts.args .. " = ();\n"
+			local lines = vim.split(text, "\n")
+			vim.api.nvim_buf_set_text(0, row - 1, col, row - 1, col, lines)
+			vim.api.nvim_win_set_cursor(0, { row + 2, 0 })
+			vim.api.nvim_feedkeys("$hi", "n", true)
+		end, { nargs = 1 })
+
+		vim.api.nvim_create_user_command("F", function(opts)
+			local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+
+			if #opts.args == 0 then
+				local text = "\nfunction (): ;\nbegin\nend;\n"
+				local lines = vim.split(text, "\n")
+				vim.api.nvim_buf_set_text(0, row - 1, col, row - 1, col, lines)
+				vim.api.nvim_win_set_cursor(0, { row + 1, 9 })
+				vim.api.nvim_feedkeys("i", "n", true)
+			else
+				local text = "\nfunction " .. opts.args .. "(): ;\nbegin\nend;\n"
+				local lines = vim.split(text, "\n")
+				vim.api.nvim_buf_set_text(0, row - 1, col, row - 1, col, lines)
+				vim.api.nvim_win_set_cursor(0, { row + 1, 0 })
+				vim.api.nvim_feedkeys("$i", "n", true)
+			end
+		end, { nargs = "?" })
 	elseif ft == "go" then
 		set_comment_prefix("//")
 		vim.keymap.set('i', 'q<tab>', '{<esc>o}<esc>O')
 		set_indent("\t")
 		vim.keymap.set('i', 'pl<tab>', 'fmt.Println()<esc>i')
+
+		vim.api.nvim_create_user_command("En", function(opts)
+			local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+			local text = "\ntype " .. opts.args .. " int\n\nconst (\n\t " .. opts.args .. " = iota\n)\n"
+			local lines = vim.split(text, "\n")
+			vim.api.nvim_buf_set_text(0, row - 1, col, row - 1, col, lines)
+			vim.api.nvim_win_set_cursor(0, { row + 4, 1 })
+			vim.api.nvim_feedkeys("i", "n", true)
+		end, { nargs = 1 })
+
+		vim.api.nvim_create_user_command("F", function(opts)
+			local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+
+			if #opts.args == 0 then
+				local text = "\nfunc () {\n}\n"
+				local lines = vim.split(text, "\n")
+				vim.api.nvim_buf_set_text(0, row - 1, col, row - 1, col, lines)
+				vim.api.nvim_win_set_cursor(0, { row + 1, 5 })
+				vim.api.nvim_feedkeys("i", "n", true)
+			else
+				local text = "\nfunc " .. opts.args .. "() {\n\n}\n"
+				local lines = vim.split(text, "\n")
+				vim.api.nvim_buf_set_text(0, row - 1, col, row - 1, col, lines)
+				vim.api.nvim_win_set_cursor(0, { row + 2, 0 })
+				vim.api.nvim_feedkeys("S", "n", true)
+			end
+		end, { nargs = "?" })
 	else
 		-- For other languages assume // and {} and tabs for indentation.
 		set_comment_prefix("//")

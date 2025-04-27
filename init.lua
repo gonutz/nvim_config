@@ -61,6 +61,7 @@ vim.keymap.set('n', '<a-v>', '<c-v>')
 vim.keymap.set({'c', 'i'}, '<C-v>', '<C-r>+', { noremap = true, silent = true })
 vim.keymap.set('n', '<leader>o', ':lua open_recent_file()<cr>')
 vim.keymap.set('n', '-', '$')
+vim.keymap.set('n', '<c-p>', 'viwp:let @+=@0<cr>', { noremap = true, silent = true })
 
 function get_tabline()
 	local s = ''

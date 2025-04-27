@@ -55,9 +55,7 @@ vim.keymap.set('n', '<leader>b', ':lua run("build")<cr>', { silent = true })
 vim.keymap.set('n', '<leader>t', ':lua run("test")<cr>', { silent = true })
 vim.keymap.set('n', '<leader>i', ':lua run("install")<cr>', { silent = true })
 vim.keymap.set('n', '<leader>f', ':lua run("format")<cr>', { silent = true })
-vim.keymap.set('n', '<leader>e', ':tabnew ')
-vim.keymap.set('i', '<tab>', '<c-n>')
-vim.keymap.set('i', '<s-tab>', '<c-p>')
+vim.keymap.set('i', '<tab>', [[pumvisible() ? "\<c-n>" : "\<c-x>\<c-o>"]], { expr = true, noremap = true })
 vim.keymap.set('n', '<a-v>', '<c-v>')
 vim.keymap.set({'c', 'i'}, '<C-v>', '<C-r>+', { noremap = true, silent = true })
 vim.keymap.set('n', '<leader>o', ':lua open_recent_file()<cr>')
@@ -349,26 +347,15 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 	end
 })
 
-local gopls_config = {
-  name = "gopls",
-  cmd = { "gopls" },
-  filetypes = { "go", "gomod", "gowork", "gotmpl" },
-  root_dir = function(fname)
-    return vim.fs.dirname(vim.fs.find({ "go.work", "go.mod", ".git" }, { upward = true, path = fname })[1])
-  end,
-  settings = {
-    gopls = {
-      analyses = {
-        unusedparams = true,
-      },
-      staticcheck = true,
-    },
-  },
+vim.lsp.config['gopls'] = {
+	cmd = { "gopls" },
+	filetypes = { "go" },
+	root_markers = { "go.mod" },
 }
+vim.lsp.enable("gopls")
 
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "go",
-  callback = function()
-    vim.lsp.start(gopls_config)
-  end,
-})
+vim.lsp.config['mylsp'] = {
+	cmd = { "lsp" },
+	filetypes = { "test" },
+}
+vim.lsp.enable("mylsp")

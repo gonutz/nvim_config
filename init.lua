@@ -221,6 +221,16 @@ local function current_file()
 	return path
 end
 
+local function tab_or_edit()
+	local buffer = vim.api.nvim_buf_get_name(0)
+	local empty = vim.api.nvim_buf_line_count(0) == 1 and vim.api.nvim_buf_get_lines(0, 0, -1, false)[1] == ""
+	if buffer == "" and empty then
+		return "edit "
+	else
+		return "tabnew "
+	end
+end
+
 function open_explorer()
 	vim.fn.system('explorer /select,"' .. current_file() .. '"')
 end
@@ -230,7 +240,7 @@ function open_console()
 end
 
 function edit_config()
-	vim.cmd("tabnew " .. vim.fn.stdpath("config") .. "/init.lua")
+	vim.cmd(tab_or_edit() .. vim.fn.stdpath("config") .. "/init.lua")
 end
 
 function source_config()
@@ -280,7 +290,7 @@ function open_recent_file()
 	end
 	local choice = tonumber(vim.fn.input("Choice: "))
 	if choice and recents[choice] then
-		vim.cmd("tabnew " .. recents[choice])
+		vim.cmd(tab_or_edit() .. recents[choice])
 	end
 end
 
@@ -328,6 +338,10 @@ local function set_filetype_settings(ft)
 		set_indent("\t")
 	end
 end
+
+vim.api.nvim_create_user_command("E", function(opts)
+	vim.cmd(tab_or_edit() .. opts.args)
+end, { nargs = 1, complete = "file" })
 
 vim.api.nvim_create_autocmd("BufEnter", {
 	callback = function()

@@ -49,6 +49,7 @@ vim.keymap.set('n', '<leader>a', ':%y<cr>')
 vim.keymap.set({'n', 'i'}, '<c-j>', '<c-e>')
 vim.keymap.set({'n', 'i'}, '<c-k>', '<c-y>')
 vim.keymap.set('n', '<leader>q', ':q<cr>')
+vim.keymap.set('n', '<leader>Q', ':qa<cr>')
 vim.keymap.set('n', '<leader>n', ':tabnew<cr>')
 vim.keymap.set('n', '<leader>r', ':lua run("run")<cr>', { silent = true })
 vim.keymap.set('n', '<leader>b', ':lua run("build")<cr>', { silent = true })
@@ -59,6 +60,7 @@ vim.keymap.set('i', '<tab>', [[pumvisible() ? "\<c-n>" : "\<c-x>\<c-o>"]], { exp
 vim.keymap.set('n', '<a-v>', '<c-v>')
 vim.keymap.set({'c', 'i'}, '<C-v>', '<C-r>+', { noremap = true, silent = true })
 vim.keymap.set('n', '<leader>o', ':lua open_recent_file()<cr>')
+vim.keymap.set('n', '-', '$')
 
 function get_tabline()
 	local s = ''

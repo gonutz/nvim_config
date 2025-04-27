@@ -288,9 +288,12 @@ end
 function open_recent_file()
 	local recents = vim.v.oldfiles
 	for i, file in ipairs(recents) do
+		if i >= 10 then
+			break
+		end
 		print(i .. ": " .. file)
 	end
-	local choice = tonumber(vim.fn.input("Choice: "))
+	local choice = tonumber(vim.fn.input(""))
 	if choice and recents[choice] then
 		vim.cmd(tab_or_edit() .. recents[choice])
 	end

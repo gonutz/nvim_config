@@ -47,9 +47,15 @@ vim.keymap.set('n', '<c-l>', '<c-w>l')
 vim.keymap.set('n', '<c-h>', '<c-w>h')
 vim.keymap.set('n', 'Ö', 'gt')
 vim.keymap.set('n', 'Ä', 'gT')
-vim.keymap.set('n', '<leader>v', ':vsp<cr>')
+vim.keymap.set('n', '<leader>v', 'V$%')
 vim.keymap.set('n', '<leader>a', vim.lsp.buf.code_action)
 vim.keymap.set('n', '<leader>R', vim.lsp.buf.rename)
+vim.keymap.set('n', '<leader>u', function()
+	vim.lsp.buf.code_action({
+		context = { only = { "source.organizeImports" } },
+		apply = true,
+	})
+end, { noremap = true, silent = true })
 vim.keymap.set('i', '<f1>', vim.lsp.buf.signature_help)
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float)
 vim.keymap.set('n', '<leader>d', vim.lsp.buf.definition)

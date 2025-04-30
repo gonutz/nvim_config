@@ -7,6 +7,7 @@ _G.run = nil
 _G.open_recent_file = nil
 _G.open_recent_file_list = nil
 _G.get_tabline = nil
+_G.surround_with = nil
 
 vim.opt.number = true
 vim.opt.relativenumber = true
@@ -23,6 +24,7 @@ vim.opt.encoding = "utf-8"
 vim.opt.fileencoding = "utf-8"
 vim.opt.tabline = "%!v:lua.get_tabline()"
 vim.opt.signcolumn = "yes"
+vim.opt.textwidth = 80
 vim.api.nvim_set_option("clipboard", "unnamedplus")
 
 vim.g.neovide_cursor_animation_length = 0
@@ -30,7 +32,7 @@ vim.g.neovide_cursor_trail_size = 0
 vim.g.neovide_cursor_animate_in_insert_mode = false
 vim.g.neovide_cursor_animate_command_line = false
 vim.g.neovide_ligatures_enabled = false
-vim.opt.guifont = "Consolas:h14"
+vim.opt.guifont = "Consolas:h15"
 
 vim.g.mapleader = ' '
 
@@ -38,13 +40,11 @@ vim.g.mapleader = ' '
 vim.keymap.set('n', '<f9>', ':lua edit_config()<cr>')
 vim.keymap.set('n', '<f10>', ':lua source_config()<cr>')
 
-vim.keymap.set({'n', 'i', 'x', 's', 'v', 't', 'o'}, 'ö', '<esc>')
+vim.keymap.set({'c', 'n', 'i', 'x', 's', 'v', 't', 'o'}, 'ö', '<esc>')
 vim.keymap.set('n', '<f11>', ":lua open_explorer()<cr>")
 vim.keymap.set('n', '<f12>', ":lua open_console()<cr>")
 vim.keymap.set('n', '<c-s>', ':w<cr>')
 vim.keymap.set('i', '<c-s>', '<esc><cmd>w<cr>a')
-vim.keymap.set('n', '<c-l>', '<c-w>l')
-vim.keymap.set('n', '<c-h>', '<c-w>h')
 vim.keymap.set('n', 'Ö', 'gt')
 vim.keymap.set('n', 'Ä', 'gT')
 vim.keymap.set('n', '<leader>v', 'V$%')
@@ -57,8 +57,15 @@ vim.keymap.set('n', '<leader>u', function()
 	})
 end, { noremap = true, silent = true })
 vim.keymap.set('i', '<f1>', vim.lsp.buf.signature_help)
-vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float)
-vim.keymap.set('n', '<leader>d', vim.lsp.buf.definition)
+vim.keymap.set('n', '<leader>E', vim.diagnostic.open_float)
+vim.keymap.set('n', '<leader>e', vim.diagnostic.goto_next)
+vim.keymap.set('n', '<leader>D', vim.lsp.buf.definition)
+vim.keymap.set('n', '<leader>d', function()
+	local cursor = vim.api.nvim_win_get_cursor(0)
+	vim.cmd("tabnew %")
+	vim.api.nvim_win_set_cursor(0, cursor)
+	vim.lsp.buf.definition()
+end, { noremap = true, silent = false })
 vim.keymap.set('n', '<leader>y', ':%y<cr>')
 vim.keymap.set({'n', 'i'}, '<c-j>', '<c-e>')
 vim.keymap.set({'n', 'i'}, '<c-k>', '<c-y>')
@@ -70,17 +77,47 @@ vim.keymap.set('n', '<leader>b', ':lua run("build")<cr>', { silent = true })
 vim.keymap.set('n', '<leader>t', ':lua run("test")<cr>', { silent = true })
 vim.keymap.set('n', '<leader>i', ':lua run("install")<cr>', { silent = true })
 vim.keymap.set('n', '<leader>f', ':lua run("format")<cr>', { silent = true })
-vim.keymap.set('i', '<tab>', [[pumvisible() ? "\<c-n>" : "\<c-x>\<c-o>"]], { expr = true, noremap = true })
+vim.keymap.set('i', '<tab>', function()
+	local omni = vim.api.nvim_buf_get_option(0, "omnifunc")
+	if vim.fn.pumvisible() ~= 1 and omni and omni ~= "" then
+		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<c-x><c-o>", true, false, true), "n", true)
+	else
+		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<c-n>", true, false, true), "n", true)
+	end
+end, { expr = true, noremap = true })
+vim.keymap.set('i', '<s-tab>', '<c-p>')
 vim.keymap.set('n', '<a-v>', '<c-v>')
 vim.keymap.set({'c', 'i'}, '<C-v>', '<C-r>+', { noremap = true, silent = true })
 vim.keymap.set('n', '<leader>o', ':lua open_recent_file_list()<cr>')
 vim.keymap.set('n', '<leader>O', ':lua open_recent_file()<cr>')
 vim.keymap.set({'n', 'x'}, '-', '$')
 vim.keymap.set('n', '<c-p>', 'viwp:let @+=@0<cr>', { noremap = true, silent = true })
-vim.keymap.set('i', '<c-h>', '<left>')
-vim.keymap.set('i', '<c-j>', '<down>')
-vim.keymap.set('i', '<c-k>', '<up>')
-vim.keymap.set('i', '<c-l>', '<right>')
+vim.keymap.set('n', '<c-left>', '<c-w><')
+vim.keymap.set('n', '<c-right>', '<c-w>>')
+vim.keymap.set('n', '<c-up>', '<c-w>+')
+vim.keymap.set('n', '<c-down>', '<c-w>-')
+vim.keymap.set('n', '<leader>h', '<c-w>h')
+vim.keymap.set('n', '<leader>j', '<c-w>j')
+vim.keymap.set('n', '<leader>k', '<c-w>k')
+vim.keymap.set('n', '<leader>l', '<c-w>l')
+vim.keymap.set('n', '<leader>w', '<c-w>w')
+vim.keymap.set('n', '<c-l>', '<c-w>w')
+vim.keymap.set('x', 'H', 'y/<c-r>+<cr>')
+vim.keymap.set('n', '(', '?(<cr>x/)<cr>x')
+vim.keymap.set('n', '[', '?[<cr>x/]<cr>x')
+vim.keymap.set('n', '{', '?{<cr>x/}<cr>x')
+vim.keymap.set('x', ')', function() surround_with("(", ")") end, { noremap = true, silent = true })
+vim.keymap.set('x', ']', function() surround_with("[", "]") end, { noremap = true, silent = true })
+vim.keymap.set('x', '}', function() surround_with("{", "}") end, { noremap = true, silent = true })
+
+function surround_with(left, right)
+	local esc = vim.api.nvim_replace_termcodes('<esc>', true, true, true)
+	if vim.fn.mode() ~= 'V' then
+		vim.api.nvim_feedkeys('s' .. left .. right .. esc .. 'P', 'n', true)
+	else
+		vim.api.nvim_feedkeys('s' .. left .. esc .. 'gpO' .. right .. esc, 'n', true)
+	end
+end
 
 function get_tabline()
 	local s = ''

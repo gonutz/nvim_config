@@ -25,6 +25,7 @@ vim.opt.fileencoding = "utf-8"
 vim.opt.tabline = "%!v:lua.get_tabline()"
 vim.opt.signcolumn = "yes"
 vim.opt.textwidth = 80
+vim.opt.wrap = false
 vim.api.nvim_set_option("clipboard", "unnamedplus")
 
 vim.g.neovide_cursor_animation_length = 0
@@ -32,7 +33,7 @@ vim.g.neovide_cursor_trail_size = 0
 vim.g.neovide_cursor_animate_in_insert_mode = false
 vim.g.neovide_cursor_animate_command_line = false
 vim.g.neovide_ligatures_enabled = false
-vim.opt.guifont = "Consolas:h15"
+vim.opt.guifont = "DejaVu Sans Mono:h15"
 
 vim.g.mapleader = ' '
 

@@ -111,6 +111,16 @@ vim.keymap.set('x', ')', function() surround_with("(", ")") end, { noremap = tru
 vim.keymap.set('x', ']', function() surround_with("[", "]") end, { noremap = true, silent = true })
 vim.keymap.set('x', '}', function() surround_with("{", "}") end, { noremap = true, silent = true })
 
+local function on_windows()
+	local os = vim.loop.os_uname().sysname
+	return os:match("Windows")
+end
+
+local function to_windows_path(path)
+	path, _ = path:gsub("/", "\\")
+	return path
+end
+
 function surround_with(left, right)
 	local esc = vim.api.nvim_replace_termcodes('<esc>', true, true, true)
 	if vim.fn.mode() ~= 'V' then
@@ -255,16 +265,6 @@ function toggle_comment(slashes)
 	vim.api.nvim_buf_set_lines(0, line_num, line_num + 1, false, {line})
 end
 
-local function on_windows()
-	local os = vim.loop.os_uname().sysname
-	return os:match("Windows")
-end
-
-local function to_windows_path(path)
-	path, _ = path:gsub("/", "\\")
-	return path
-end
-
 local function current_folder()
 	local path = vim.fn.expand("%:p:h")
 	if on_windows() then
@@ -292,11 +292,19 @@ local function tab_or_edit()
 end
 
 function open_explorer()
-	vim.fn.system('explorer /select,"' .. current_file() .. '"')
+	if on_windows() then
+		vim.fn.system('explorer /select,"' .. current_file() .. '"')
+	else
+		vim.fn.system("thunar &")
+	end
 end
 
 function open_console()
-	vim.fn.system("start /MAX cmd /k cd /d " .. current_folder())
+	if on_windows() then
+		vim.fn.system("start /MAX cmd /k cd /d " .. current_folder())
+	else
+		vim.fn.system("alacritty &")
+	end
 end
 
 function edit_config()
@@ -366,7 +374,10 @@ function open_recent_file_list()
 		list = list .. file .. "\n"
 	end
 
-	vim.cmd("tabnew")
+	if tab_or_edit() ~= "edit " then
+		vim.cmd("tabnew")
+	end
+
 	local buffer = vim.api.nvim_get_current_buf()
 	vim.bo[buffer].buftype = "nofile"
 	vim.bo[buffer].swapfile = false
